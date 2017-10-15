@@ -37,4 +37,14 @@ public class Connection
     {
         return tempValue;
     }
+
+    public Neuron getParent()
+    {
+        return parent;
+    }
+
+    public Neuron getChild()
+    {
+        return child;
+    }
 }

@@ -10,12 +10,9 @@ import java.util.ArrayList;
  */
 public class Agent
 {
-    private final ArrayList<Neuron> hiddenNeurons = new ArrayList<Neuron>();
-    private final ArrayList<Neuron> inputNeurons = new ArrayList<Neuron>();
-    private final ArrayList<Neuron> outputNeurons = new ArrayList<Neuron>();
     private final String uuid;
     private final String path;
-    private boolean loaded;
+    private Network network;
 
     public Agent(String uuid, String database)
     {
@@ -25,19 +22,25 @@ public class Agent
 
     public boolean isLoaded()
     {
-        return loaded;
+        return network != null;
     }
 
     public void load()
     {
-        // TODO Load agent from database.
-        loaded = true;
+        // TODO Load agent from database
+        // TODO Generate new network if does not exist in database
+        network = new Network();
+    }
+
+    public void saveNetwork()
+    {
+        // TODO Save agent to database
     }
 
     public void unload()
     {
-        // TODO Unload agent from database.
-        loaded = false;
+        network = null;
+        System.gc();
     }
 
     public String getUUID()
