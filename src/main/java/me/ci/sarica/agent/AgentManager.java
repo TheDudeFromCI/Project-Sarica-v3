@@ -1,6 +1,9 @@
 package me.ci.sarica.agent;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * Created by thedudefromci on 10/9/17.
@@ -11,26 +14,26 @@ import java.io.File;
  */
 public class AgentManager
 {
-    private final int populationSize;
+    private final Agent[] agents;
     private final String path;
+    private final int inputs;
+    private final int outputs;
     private float passbilityScore = 0.75f;
-    private int agentIndex;
+    private int generation;
 
-    public AgentManager()
+    public AgentManager(int populationSize, int inputs, int outputs)
     {
-        this(100);
-    }
-
-    public AgentManager(int populationSize)
-    {
-        this.populationSize = populationSize;
+        this.inputs = inputs;
+        this.outputs = outputs;
+        agents = new Agent[populationSize];
         path = System.getProperty("user.dir") + File.separatorChar + "agents";
         generateInitalPopulation();
+        generation = 1;
     }
 
     public int getPopulationSize()
     {
-        return populationSize;
+        return agents.length;
     }
 
     public float getPassbilityScore()
@@ -45,6 +48,33 @@ public class AgentManager
 
     private void generateInitalPopulation()
     {
-        // TODO Generate population
+        for (int i = 0; i < agents.length; i++)
+            agents[i] = Agent.createAgent(path, inputs, outputs);
+    }
+
+    public Agent getAgent(int index)
+    {
+        return agents[index];
+    }
+
+    public void nextGeneration()
+    {
+        Arrays.sort(agents, new Comparator<Agent>()
+        {
+            public int compare(Agent a, Agent b)
+            {
+                return Float.compare(a.getScore(), b.getScore());
+            }
+        });
+
+        int half = agents.length / 2;
+        for (int i = 0; i < half; i++)
+            agents[i] = agents[i + half].reproduce();
+        generation++;
+    }
+
+    public int getGeneration()
+    {
+        return generation;
     }
 }

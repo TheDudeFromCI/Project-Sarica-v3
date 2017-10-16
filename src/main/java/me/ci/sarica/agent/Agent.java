@@ -2,6 +2,7 @@ package me.ci.sarica.agent;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * Created by thedudefromci on 10/12/17.
@@ -10,14 +11,45 @@ import java.util.ArrayList;
  */
 public class Agent
 {
+    private static String randomUUID()
+    {
+        return UUID.randomUUID().toString();
+    }
+
+    public static Agent createAgent(String path, int inputs, int outputs)
+    {
+        Agent agent = new Agent(randomUUID(), path);
+        agent.network = new Network();
+
+        for (int i = 0; i < inputs; i++)
+            agent.network.addInputNeuron();
+        for (int i = 0; i < outputs; i++)
+            agent.network.addOutputNeuron();
+
+        return agent;
+    }
+
     private final String uuid;
+    private final String database;
     private final String path;
     private Network network;
+    private float score;
 
-    public Agent(String uuid, String database)
+    private Agent(String uuid, String database)
     {
         this.uuid = uuid;
+        this.database = database;
         path = database + File.separatorChar + uuid;
+    }
+
+    public void setScore(float score)
+    {
+        this.score = score;
+    }
+
+    public float getScore()
+    {
+        return score;
     }
 
     public boolean isLoaded()
@@ -41,6 +73,18 @@ public class Agent
     {
         network = null;
         System.gc();
+    }
+
+    public Agent reproduce()
+    {
+        Agent agent = new Agent(randomUUID(), database);
+
+        if (!isLoaded())
+            load();
+        agent.network = network.duplicate();
+        agent.network.mutate();
+
+        return agent;
     }
 
     public String getUUID()

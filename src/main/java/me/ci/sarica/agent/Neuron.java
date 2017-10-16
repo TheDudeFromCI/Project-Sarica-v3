@@ -48,6 +48,38 @@ public class Neuron
             outgoingConnections.get(i).setTempValue(value);
     }
 
+    public void copyProperties(Neuron other)
+    {
+        incomingConnections.clear();
+        outgoingConnections.clear();
+
+        value = other.value;
+        positionX = other.positionX;
+        positionY = other.positionY;
+        positionZ = other.positionZ;
+        function = other.function;
+    }
+
+    public int getIncomingConnectionCount()
+    {
+        return incomingConnections.size();
+    }
+
+    public int getOutgoingConnectionCount()
+    {
+        return outgoingConnections.size();
+    }
+
+    public Connection getIncomingConnectionByIndex(int index)
+    {
+        return incomingConnections.get(index);
+    }
+
+    public Connection getOutgoingConnectionByIndex(int index)
+    {
+        return outgoingConnections.get(index);
+    }
+
     public void setValue(float value)
     {
         this.value = value;
