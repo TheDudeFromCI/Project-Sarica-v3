@@ -20,3 +20,11 @@ Any machine learning agent that follows this criteria is considered an AGI for t
 
 ## Where does the name Sarica come from?
 Sarica is the name of a fictional character from a book I started to write back in highschool. The character was a self aware AI from a highly advanced video game, designed for the purpose of being a moderator to keep players in check, that became curious about our world.
+
+## Is this project open source?
+Yes, this project is open source. If you wish to make an edit, you may do do on another branch. Though it is requested you message me about it first before any edits are made.
+
+## Who can use this software?
+This software is open source and is available for free for all users. Any edits can be made via forking, or branching mentioned above.
+
+There is currently no available releases for this software, so if you wish to use it, you must download and compile it yourself. Release binaries will be distributed once the software ha reached a stable version.
