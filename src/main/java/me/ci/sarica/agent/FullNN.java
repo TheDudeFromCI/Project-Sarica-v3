@@ -1,4 +1,4 @@
-package me.ci.sarica.agent.full_network;
+package me.ci.sarica.agent;
 
 /**
  * Created by TheDudeFromCI on 10/18/2017.

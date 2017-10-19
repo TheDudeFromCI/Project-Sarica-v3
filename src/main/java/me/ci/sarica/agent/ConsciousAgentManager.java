@@ -1,4 +1,4 @@
-package me.ci.sarica.agent.full_network;
+package me.ci.sarica.agent;
 
 import java.util.Arrays;
 import java.util.Comparator;

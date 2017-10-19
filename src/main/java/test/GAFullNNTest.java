@@ -2,8 +2,8 @@ package test;
 
 import me.ci.sarica.agent.Agent;
 import me.ci.sarica.agent.AgentManager;
-import me.ci.sarica.agent.full_network.ConsciousAgentManager;
-import me.ci.sarica.agent.full_network.FullNN;
+import me.ci.sarica.agent.ConsciousAgentManager;
+import me.ci.sarica.agent.FullNN;
 
 /**
  * Created by TheDudeFromCI on 10/18/2017.
