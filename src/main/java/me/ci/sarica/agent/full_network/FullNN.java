@@ -23,6 +23,11 @@ public class FullNN
 
     public FullNN(int inputNeurons, int hiddenNeurons, int outputNeurons)
     {
+        this(inputNeurons, hiddenNeurons, outputNeurons, true);
+    }
+
+    public FullNN(int inputNeurons, int hiddenNeurons, int outputNeurons, boolean randomWeights)
+    {
         this.inputNeurons = inputNeurons;
         this.hiddenNeurons = hiddenNeurons;
         this.outputNeurons = outputNeurons;
@@ -31,6 +36,14 @@ public class FullNN
         neurons = new float[totalNeurons];
         weights = new float[totalNeurons * totalNeurons];
         tempValues = new float[neurons.length];
+
+        if (randomWeights)
+        {
+            for (int i = 0; i < neurons.length; i++)
+                neurons[i] = (float) Math.random();
+            for (int i = 0; i < weights.length; i++)
+                weights[i] = (float) Math.random() * 2f - 1f;
+        }
     }
 
     public float getScore()
@@ -117,13 +130,12 @@ public class FullNN
         }
     }
 
-    public FullNN reproduce(boolean cloneNeurons, float weightMutation, float weightPercentsMutated)
+    public FullNN reproduce(float weightMutation, float weightPercentsMutated)
     {
-        FullNN nn = new FullNN(inputNeurons, hiddenNeurons, outputNeurons);
+        FullNN nn = new FullNN(inputNeurons, hiddenNeurons, outputNeurons, false);
 
-        if (cloneNeurons)
-            for (int i = 0; i < neurons.length; i++)
-                nn.neurons[i] = neurons[i];
+        for (int i = 0; i < neurons.length; i++)
+            nn.neurons[i] = neurons[i];
 
         for (int i = 0; i < weights.length; i++)
         {

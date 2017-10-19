@@ -51,7 +51,7 @@ public class ConsciousAgentManager
 
         int half = agents.length / 2;
         for (int i = 0; i < half; i++)
-            agents[i] = agents[i + half].reproduce(false, 0.05f, 0.4f);
+            agents[i] = agents[i + half].reproduce(0.05f, 0.4f);
         generation++;
     }
 }
