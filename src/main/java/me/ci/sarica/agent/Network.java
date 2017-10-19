@@ -39,6 +39,14 @@ public class Network
         inputNeurons.remove(neuron);
     }
 
+    public void solve()
+    {
+        for (int i = 0; i < getTotalNeuronCount(); i++)
+            getGlobalNeuronByIndex(i).storeValue();
+        for (int i = 0; i < getTotalNeuronCount(); i++)
+            getGlobalNeuronByIndex(i).solveValue();
+    }
+
     public Neuron addHiddenNeuron()
     {
         Neuron neuron = new Neuron();
@@ -147,7 +155,7 @@ public class Network
             for (int j = 0; j < n.getOutgoingConnectionCount(); j++)
             {
                 Connection c = n.getOutgoingConnectionByIndex(j);
-                network.getInputNeuronById(i).connectToChildNeuron(network.getGlobalNeuronByIndex(getGlobalIndexOf(c.getChild()))).setWeight(c.getWeight());
+                network.getGlobalNeuronByIndex(i).connectToChildNeuron(network.getGlobalNeuronByIndex(getGlobalIndexOf(c.getChild()))).setWeight(c.getWeight());
             }
         }
 
@@ -186,7 +194,7 @@ public class Network
     {
         float action = (float)Math.random();
 
-        if (action < 0.4f)
+        if (action < 0.6f)
         {
             // Grow connection
             Neuron n1 = getGlobalNeuronByIndex((int)(Math.random() * getTotalNeuronCount()));
@@ -195,7 +203,7 @@ public class Network
             if (n1 != n2)
                 n1.connectToChildNeuron(n2);
         }
-        else if (action < 0.4f + 0.35f)
+        else if (action < 0.6f + 0.15f)
         {
             // Destory connection
             Neuron n = getGlobalNeuronByIndex((int)(Math.random() * getTotalNeuronCount()));
@@ -215,9 +223,12 @@ public class Network
         else
         {
             // Remove neuron
-            Neuron n = getHiddenNeuronById((int)(Math.random() * getHiddenNeuronCount()));
-            n.safeDelete();
-            hiddenNeurons.remove(n);
+            if (getHiddenNeuronCount() > 0)
+            {
+                Neuron n = getHiddenNeuronById((int)(Math.random() * getHiddenNeuronCount()));
+                n.safeDelete();
+                hiddenNeurons.remove(n);
+            }
         }
     }
 }

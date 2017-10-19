@@ -59,6 +59,9 @@ public class Agent
 
     public void load()
     {
+        if (isLoaded())
+            return;
+
         // TODO Load agent from database
         // TODO Generate new network if does not exist in database
         network = new Network();
@@ -71,6 +74,9 @@ public class Agent
 
     public void unload()
     {
+        if (!isLoaded())
+            return;
+
         network = null;
         System.gc();
     }
@@ -85,6 +91,32 @@ public class Agent
         agent.network.mutate();
 
         return agent;
+    }
+
+    public Network getNetwork()
+    {
+        return network;
+    }
+
+    public void setInput(int index, float value)
+    {
+        if (!isLoaded())
+            load();
+
+        network.getInputNeuronById(index).setValue(value);
+    }
+
+    public float getOutput(int index)
+    {
+        if (!isLoaded())
+            load();
+
+        return network.getOutputNeuronById(index).getValue();
+    }
+
+    public void solve()
+    {
+        network.solve();
     }
 
     public String getUUID()

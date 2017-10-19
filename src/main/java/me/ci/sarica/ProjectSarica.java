@@ -24,7 +24,6 @@ public class ProjectSarica
         {
             // Start agent manager
             Terminal.logVerbose("System", "Creating agent manager.");
-            AgentManager manager = new AgentManager();
         }
         catch(Exception exception)
         {

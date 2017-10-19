@@ -49,7 +49,12 @@ public class AgentManager
     private void generateInitalPopulation()
     {
         for (int i = 0; i < agents.length; i++)
+        {
             agents[i] = Agent.createAgent(path, inputs, outputs);
+
+            for (int j = 0; j < 10; j++)
+                agents[i].getNetwork().mutate();
+        }
     }
 
     public Agent getAgent(int index)
@@ -59,6 +64,12 @@ public class AgentManager
 
     public void nextGeneration()
     {
+        // Luck of the draw
+        // Each agents gets up to a 10% shift in their score
+        // This gives a small chance for under-preforming agents to survive
+        for (int i = 0; i < agents.length; i++)
+            agents[i].setScore(agents[i].getScore() * (1f + (float)Math.random() * 0.1f));
+
         Arrays.sort(agents, new Comparator<Agent>()
         {
             public int compare(Agent a, Agent b)
