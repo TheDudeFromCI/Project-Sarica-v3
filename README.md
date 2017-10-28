@@ -14,7 +14,7 @@ There is no hard definition of Artificial General Intelligence, but the general 
 
 * Observing and overseeing it's own growth and making corrections based on this feedback.
 
-* Assigning it's own goals without any prior instructions, and making attempts towards completing those goals.
+* Assigning it's own subgoals based on only known knowledge, and making attempts towards completing those goals.
 
 Any machine learning agent that follows this criteria is considered an AGI for the purposes of this repository. Agents that are capable of meeting these to higher degrees are considered more advanced agents.
 
