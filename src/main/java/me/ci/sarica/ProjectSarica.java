@@ -1,6 +1,5 @@
 package me.ci.sarica;
 
-import me.ci.sarica.agent.AgentManager;
 import me.ci.sarica.terminal.Terminal;
 
 /**
