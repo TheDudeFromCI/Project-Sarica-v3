@@ -1,5 +1,7 @@
 package test;
 
+import me.ci.sarica.agent.matrix_based.Matrix;
+import me.ci.sarica.agent.matrix_based.NeuralNetwork;
 import me.ci.sarica.agent.standard.ClassificationDatabase;
 import me.ci.sarica.agent.standard.ClassifierExample;
 import me.ci.sarica.agent.standard.StandardNN;
@@ -103,37 +105,24 @@ public class BinaryDigitCountingTest
             }
         }
 
-        StandardNN nn = new StandardNN(3, new int[]{12}, 3);
+        NeuralNetwork nn = new NeuralNetwork(3, 6, 3);
         StandardNNTrainingProgress training = new StandardNNTrainingProgress();
-        training.maxIterations = 100;
+        training.maxIterations = 60000;
         training.learningRate = 0.01f;
         training.learningRateLoss = 0.999f;
 
         System.out.println("Starting training");
+        nn.train(database, training);
+        System.out.println();
 
-        int gen;
-        for (gen = 0; gen < 100000; gen += 100)
+        System.out.println("Training Complete. Results:");
         {
-            System.out.println("Generation: " + gen);
-            System.out.println("  Score: " + nn.test(database, 50));
-
-            {
-                // Print random test result
-                ClassifierExample example = database.randomTest();
-                for (int n = 0; n < nn.getInputCount(); n++)
-                    nn.setInput(n, example.getInput(n));
-                nn.run();
-                for (int n = 0; n < nn.getOutputCount(); n++)
-                    System.out.printf("  - %.2f / %.2f\n", nn.getOutput(n), example.getOutput(n));
-            }
-
-            System.out.println();
-
-            training.iterations = 0;
-            nn.train(database, training);
+            Matrix m = new Matrix(8, 3);
+            for (int r = 0; r < 8; r++)
+                for (int c = 0; c < 3; c++)
+                    m.setValue(r, 2 - c, (r & (1 << c)) > 0 ? 1f : 0f);
+            m = nn.run(m);
+            System.out.println(m);
         }
-
-        System.out.println("Final Results (Gen " + gen + "):");
-        System.out.println("  Score: " + nn.test(database, 50));
     }
 }
