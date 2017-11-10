@@ -111,6 +111,7 @@ public class StandardNN
 
     private void trainIteration(ClassificationDatabase database, float sampleWeight, float momentum)
     {
+        sampleWeight *= 1f / database.getSampleSize();
         ClassifierExample example;
         for (int i = 0; i < database.getSampleSize(); i++)
         {
@@ -122,7 +123,7 @@ public class StandardNN
 
             float[] lastLayerError = new float[getOutputCount()];
             for (int n = 0; n < lastLayerError.length; n++)
-                lastLayerError[n] = 2f * (example.getOutput(n) - getOutput(n));
+                lastLayerError[n] = (example.getOutput(n) - getOutput(n)) * (getOutput(n) > 0 ? 1f : 0f);
 
             float[] currentLayerError;
             for (int layer = neurons.length - 2; layer >= 0; layer--)
@@ -136,26 +137,41 @@ public class StandardNN
 
                         float w = con.getWeight();
                         currentLayerError[n] += lastLayerError[j] * w;
-
-                        float delta = sampleWeight * lastLayerError[j] * neurons[layer][n].getValue();
-                        w += delta + momentum * con.getLastDelta();
-                        con.setLastDelta(delta);
-
-                        con.setWeight(w);
+                        con.addDelta(lastLayerError[j] * neurons[layer][n].getValue());
                     }
+
+                    currentLayerError[n] *= (neurons[layer][n].getValue() > 0 ? 1f : 0f);
                 }
 
-                for (int n = 0; n < lastLayerError.length; n++)
-                {
-                    float bias = neurons[layer + 1][n].getBias();
+//                for (int n = 0; n < lastLayerError.length; n++)
+//                {
+//                    float bias = neurons[layer + 1][n].getBias();
+//
+//                    float delta = sampleWeight * lastLayerError[n];
+//                    bias -= delta + momentum * neurons[layer + 1][n].getLastDelta();
+//
+//                    neurons[layer + 1][n].setLastDelta(delta);
+//                    neurons[layer + 1][n].setBias(bias);
+//                }
 
-                    float delta = sampleWeight * lastLayerError[n];
-                    bias += delta + momentum * neurons[layer + 1][n].getLastDelta();
-                    neurons[layer + 1][n].setLastDelta(delta);
-
-                    neurons[layer + 1][n].setBias(bias);
-                }
                 lastLayerError = currentLayerError;
+            }
+        }
+
+        for (int layer = 0; layer < neurons.length - 2; layer++)
+        {
+            for (int n = 0; n < neurons[layer].length; n++)
+            {
+                for (int j = 0; j < neurons[layer + 1].length; j++)
+                {
+                    StandardConnection con = neurons[layer][n].getChildConnection(j);
+
+                    float delta = con.getDeltaSum();
+                    float w = con.getWeight() + delta + momentum * con.getLastDelta();
+                    con.setLastDelta(delta);
+
+                    con.setWeight(sampleWeight * w);
+                }
             }
         }
     }

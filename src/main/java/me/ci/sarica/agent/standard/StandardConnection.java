@@ -6,6 +6,7 @@ public class StandardConnection
     private final StandardNeuron child;
     private float weight;
     private float lastDelta;
+    private float deltaSum;
 
     public StandardConnection(StandardNeuron parent, StandardNeuron child)
     {
@@ -24,6 +25,21 @@ public class StandardConnection
     public void setLastDelta(float delta)
     {
         lastDelta = delta;
+    }
+
+    public void resetDelta()
+    {
+        deltaSum = 0f;
+    }
+
+    public void addDelta(float delta)
+    {
+        deltaSum += delta;
+    }
+
+    public float getDeltaSum()
+    {
+        return deltaSum;
     }
 
     public StandardNeuron getChild()

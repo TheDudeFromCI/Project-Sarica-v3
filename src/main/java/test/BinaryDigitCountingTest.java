@@ -103,10 +103,10 @@ public class BinaryDigitCountingTest
             }
         }
 
-        StandardNN nn = new StandardNN(3, new int[]{3}, 3);
+        StandardNN nn = new StandardNN(3, new int[]{12}, 3);
         StandardNNTrainingProgress training = new StandardNNTrainingProgress();
         training.maxIterations = 100;
-        training.learningRate = 0.001f;
+        training.learningRate = 0.01f;
         training.learningRateLoss = 0.999f;
 
         System.out.println("Starting training");
@@ -116,6 +116,17 @@ public class BinaryDigitCountingTest
         {
             System.out.println("Generation: " + gen);
             System.out.println("  Score: " + nn.test(database, 50));
+
+            {
+                // Print random test result
+                ClassifierExample example = database.randomTest();
+                for (int n = 0; n < nn.getInputCount(); n++)
+                    nn.setInput(n, example.getInput(n));
+                nn.run();
+                for (int n = 0; n < nn.getOutputCount(); n++)
+                    System.out.printf("  - %.2f / %.2f\n", nn.getOutput(n), example.getOutput(n));
+            }
+
             System.out.println();
 
             training.iterations = 0;

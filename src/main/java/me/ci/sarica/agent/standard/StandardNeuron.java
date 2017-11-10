@@ -64,7 +64,7 @@ public class StandardNeuron
     private float activationFunction(float x)
     {
         // ReLU
-        return Math.max(0, x);
+        return Math.max(0, Math.min(x, 10));
     }
 
     public void connectToChild(StandardNeuron child)
