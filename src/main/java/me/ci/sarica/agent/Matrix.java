@@ -1,4 +1,4 @@
-package me.ci.sarica.agent.matrix_based;
+package me.ci.sarica.agent;
 
 public class Matrix
 {
@@ -48,6 +48,11 @@ public class Matrix
 
         s += "]\n";
         return s;
+    }
+
+    public float[] getValues()
+    {
+        return values;
     }
 
     public void setValue(int row, int col, float value)

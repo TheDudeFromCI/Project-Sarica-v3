@@ -1,4 +1,4 @@
-package me.ci.sarica.agent.standard;
+package me.ci.sarica.agent;
 
 public class ClassifierExample
 {

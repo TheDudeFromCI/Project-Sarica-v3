@@ -1,8 +1,4 @@
-package me.ci.sarica.agent.matrix_based;
-
-import me.ci.sarica.agent.standard.ClassificationDatabase;
-import me.ci.sarica.agent.standard.ClassifierExample;
-import me.ci.sarica.agent.standard.StandardNNTrainingProgress;
+package me.ci.sarica.agent;
 
 public class NeuralNetwork
 {
@@ -20,7 +16,7 @@ public class NeuralNetwork
 
         layers = new Matrix[layerSizes.length - 1];
         for (int i = 0; i < layers.length; i++)
-            layers[i] = buildLayerMatrix(layerSizes[i] + (i == 0 ? 1 : 0), layerSizes[i + 1]);
+            layers[i] = buildLayerMatrix(layerSizes[i], layerSizes[i + 1]);
     }
 
     public int getInputs()
@@ -43,42 +39,62 @@ public class NeuralNetwork
         return m;
     }
 
-    public void train(ClassificationDatabase database, StandardNNTrainingProgress training)
+    public void train(ClassificationDatabase database, int sampleCount, int iterations)
     {
         if (database.getInputCount() != getInputs())
             throw new IllegalArgumentException("Database input count does not match network input count!");
         if (database.getOutputCount() != getOutputs())
             throw new IllegalArgumentException("Database output count does not match network output count!");
 
-        Matrix x = new Matrix(database.getExampleCount(), database.getInputCount());
-        Matrix y = new Matrix(database.getExampleCount(), database.getOutputCount());
+        if (sampleCount == -1)
+            sampleCount = database.getExampleCount();
+        sampleCount = Math.min(sampleCount, database.getExampleCount());
 
-        for (int i = 0; i < x.getRows(); i++)
+        Matrix x = new Matrix(sampleCount, database.getInputCount());
+        Matrix y = new Matrix(sampleCount, database.getOutputCount());
+
+        if (sampleCount == database.getExampleCount())
         {
-            ClassifierExample ex = database.getExample(i);
-            for (int n = 0; n < getInputs(); n++)
-                x.setValue(i, n, ex.getInput(n));
-            for (int n = 0; n < getOutputs(); n++)
-                y.setValue(i, n, ex.getOutput(n));
-        }
+            for (int i = 0; i < x.getRows(); i++)
+            {
+                ClassifierExample ex = database.getExample(i);
+                for (int n = 0; n < getInputs(); n++)
+                    x.setValue(i, n, ex.getInput(n));
+                for (int n = 0; n < getOutputs(); n++)
+                    y.setValue(i, n, ex.getOutput(n));
+            }
 
-        train(x, y, training.maxIterations);
+            train(x, y, iterations, 0);
+        }
+        else
+        {
+            int itrRemain = iterations;
+            int subItr = iterations / sampleCount;
+            int gen = 0;
+            for (int j = 0; j <= subItr; j++)
+            {
+                for (int i = 0; i < x.getRows(); i++)
+                {
+                    ClassifierExample ex = database.randomExample();
+                    for (int n = 0; n < getInputs(); n++)
+                        x.setValue(i, n, ex.getInput(n));
+                    for (int n = 0; n < getOutputs(); n++)
+                        y.setValue(i, n, ex.getOutput(n));
+                }
+
+                int steps = Math.min(itrRemain, sampleCount);
+                train(x, y, steps, gen);
+                itrRemain -= steps;
+                gen += steps;
+
+                if (itrRemain == 0)
+                    break;
+            }
+        }
     }
 
-    public void train(Matrix x, Matrix y, int iterations)
+    public void train(Matrix x, Matrix y, int iterations, int iterationOffset)
     {
-        // Append bias neuron to X
-        {
-            Matrix x2 = new Matrix(x.getRows(), x.getCols() + 1);
-            for (int r = 0; r < x.getRows(); r++)
-            {
-                for (int c = 0; c < x.getCols(); c++)
-                    x2.setValue(r, c, x.getValue(r, c));
-                x2.setValue(r, x.getCols(), 1f);
-            }
-            x = x2;
-        }
-
         Matrix[] l = new Matrix[layers.length + 1];
         Matrix[] error = new Matrix[layers.length];
         Matrix[] delta = new Matrix[layers.length];
@@ -95,8 +111,8 @@ public class NeuralNetwork
             error[lastLayer] = sub(y, l[layerValueLayer]);
             delta[lastLayer] = mul(error[lastLayer], sigmoidDeriv(l[layerValueLayer]));
 
-            if (itr % 50 == 0)
-                System.out.println("Iteration " + itr + ": " + meanError(error[lastLayer]));
+            if ((itr + iterationOffset) % 50 == 0)
+                System.out.println("Iteration " + (itr + iterationOffset) + ": " + meanError(error[lastLayer]));
 
             for (int i = layers.length - 2; i >= 0; i--)
             {
@@ -105,24 +121,12 @@ public class NeuralNetwork
             }
 
             for (int i = 0; i < layers.length; i++)
-                layers[i] = add(layers[i], dot(transpose(l[i]), delta[i]));
+                layers[i] = mul(add(layers[i], dot(transpose(l[i]), delta[i])), 1f);
         }
     }
 
     public Matrix run(Matrix in)
     {
-        // Append bias neuron to X
-        {
-            Matrix x2 = new Matrix(in.getRows(), in.getCols() + 1);
-            for (int r = 0; r < in.getRows(); r++)
-            {
-                for (int c = 0; c < in.getCols(); c++)
-                    x2.setValue(r, c, in.getValue(r, c));
-                x2.setValue(r, in.getCols(), 1f);
-            }
-            in = x2;
-        }
-
         Matrix[] l = new Matrix[layers.length + 1];
 
         l[0] = in;
@@ -174,12 +178,15 @@ public class NeuralNetwork
 
         Matrix c = new Matrix(a.getRows(), b.getCols());
 
+        float[] aVals = a.getValues();
+        float[] bVals = b.getValues();
+
         for (int row = 0; row < c.getRows(); row++)
             for (int col = 0; col < c.getCols(); col++)
             {
                 float v = 0f;
                 for (int j = 0; j < a.getCols(); j++)
-                    v += a.getValue(row, j) * b.getValue(j, col);
+                    v += aVals[j * a.getRows() + row] * bVals[col * b.getRows() + j];
                 c.setValue(row, col, v);
             }
 
@@ -220,6 +227,16 @@ public class NeuralNetwork
 
         for (int i = 0; i < m.getValueCount(); i++)
             c.setValueByIndex(i, sigmoid(m.getValueByIndex(i)));
+
+        return c;
+    }
+
+    private Matrix mul(Matrix m, float s)
+    {
+        Matrix c = new Matrix(m.getRows(), m.getCols());
+
+        for (int i = 0; i < m.getValueCount(); i++)
+            c.setValueByIndex(i, m.getValueByIndex(i) * s);
 
         return c;
     }

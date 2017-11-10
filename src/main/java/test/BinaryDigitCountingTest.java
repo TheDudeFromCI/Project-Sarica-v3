@@ -1,11 +1,9 @@
 package test;
 
-import me.ci.sarica.agent.matrix_based.Matrix;
-import me.ci.sarica.agent.matrix_based.NeuralNetwork;
-import me.ci.sarica.agent.standard.ClassificationDatabase;
-import me.ci.sarica.agent.standard.ClassifierExample;
-import me.ci.sarica.agent.standard.StandardNN;
-import me.ci.sarica.agent.standard.StandardNNTrainingProgress;
+import me.ci.sarica.agent.Matrix;
+import me.ci.sarica.agent.NeuralNetwork;
+import me.ci.sarica.agent.ClassificationDatabase;
+import me.ci.sarica.agent.ClassifierExample;
 
 public class BinaryDigitCountingTest
 {
@@ -106,13 +104,9 @@ public class BinaryDigitCountingTest
         }
 
         NeuralNetwork nn = new NeuralNetwork(3, 6, 3);
-        StandardNNTrainingProgress training = new StandardNNTrainingProgress();
-        training.maxIterations = 60000;
-        training.learningRate = 0.01f;
-        training.learningRateLoss = 0.999f;
 
         System.out.println("Starting training");
-        nn.train(database, training);
+        nn.train(database, -1, 60000);
         System.out.println();
 
         System.out.println("Training Complete. Results:");

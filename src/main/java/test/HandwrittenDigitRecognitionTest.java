@@ -1,9 +1,9 @@
 package test;
 
-import me.ci.sarica.agent.standard.ClassificationDatabase;
-import me.ci.sarica.agent.standard.ClassifierExample;
-import me.ci.sarica.agent.standard.StandardNN;
-import me.ci.sarica.agent.standard.StandardNNTrainingProgress;
+import me.ci.sarica.agent.ClassificationDatabase;
+import me.ci.sarica.agent.ClassifierExample;
+import me.ci.sarica.agent.Matrix;
+import me.ci.sarica.agent.NeuralNetwork;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -15,39 +15,45 @@ public class HandwrittenDigitRecognitionTest
     {
         ClassificationDatabase database = new ClassificationDatabase(28 * 28, 10);
         loadDatabase(database);
-        StandardNN nn = new StandardNN(28 * 28, new int[]{16, 16, 16}, 10);
-
-        StandardNNTrainingProgress training = new StandardNNTrainingProgress();
-        training.maxIterations = 100;
-        training.learningRate = 0.1f;
-        training.learningRateLoss = 0.99f;
+        NeuralNetwork nn = new NeuralNetwork(28 * 28, 24, 16, 10);
 
         System.out.println("Starting training");
+        nn.train(database, 3, 25000);
 
-        int gen;
-        for (gen = 0; gen < 100000; gen += 100)
+        System.out.println("Training Complete. Results:");
         {
-            System.out.println("Generation: " + gen);
-            System.out.println("  Score: " + nn.test(database, 5000));
+            int randomImageSamples = 10;
+            ClassifierExample[] tests = new ClassifierExample[randomImageSamples];
+            for (int i = 0; i < randomImageSamples; i++)
+                tests[i] = database.randomTest();
 
+            Matrix m = new Matrix(randomImageSamples, 28 * 28);
+            for (int r = 0; r < randomImageSamples; r++)
             {
-                // Print random test result
-                ClassifierExample example = database.randomTest();
-                for (int n = 0; n < nn.getInputCount(); n++)
-                    nn.setInput(n, example.getInput(n));
-                nn.run();
-                for (int n = 0; n < nn.getOutputCount(); n++)
-                    System.out.printf("  - %.2f / %.2f\n", nn.getOutput(n), example.getOutput(n));
+                for (int c = 0; c < 28 * 28; c++)
+                    m.setValue(r, c, tests[r].getInput(c));
             }
+            m = nn.run(m);
 
-            System.out.println();
-
-            training.iterations = 0;
-            nn.train(database, training);
+            System.out.println(round(m));
+            System.out.println("\nReal Answers:");
+            for (int i = 0; i < randomImageSamples; i++)
+            {
+                for (int n = 0; n < 10; n++)
+                    if (tests[i].getOutput(n) > 0)
+                        System.out.println(n);
+            }
         }
+    }
 
-        System.out.println("Final Results (Gen " + gen + "):");
-        System.out.println("  Score: " + nn.test(database, 5000));
+    private static Matrix round(Matrix m)
+    {
+        Matrix c = new Matrix(m.getRows(), m.getCols());
+
+        for (int i = 0; i < m.getValueCount(); i++)
+            c.setValueByIndex(i, Math.round(m.getValueByIndex(i)));
+
+        return c;
     }
 
     private static void loadDatabase(ClassificationDatabase database)
