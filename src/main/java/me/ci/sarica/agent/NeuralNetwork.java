@@ -41,6 +41,12 @@ public class NeuralNetwork
 
     public void train(ClassificationDatabase database, int sampleCount, int iterations)
     {
+        train(database, sampleCount, iterations, 0, 0.1f, 0.999f);
+    }
+
+    public float train(ClassificationDatabase database, int sampleCount, int iterations, int iterationsOffset, float
+                                                                                                                  learningRate, float learningLoss)
+    {
         if (database.getInputCount() != getInputs())
             throw new IllegalArgumentException("Database input count does not match network input count!");
         if (database.getOutputCount() != getOutputs())
@@ -64,13 +70,13 @@ public class NeuralNetwork
                     y.setValue(i, n, ex.getOutput(n));
             }
 
-            train(x, y, iterations, 0);
+            train(x, y, iterations, iterationsOffset, learningRate, learningLoss);
         }
         else
         {
             int itrRemain = iterations;
             int subItr = iterations / sampleCount;
-            int gen = 0;
+
             for (int j = 0; j <= subItr; j++)
             {
                 for (int i = 0; i < x.getRows(); i++)
@@ -83,17 +89,24 @@ public class NeuralNetwork
                 }
 
                 int steps = Math.min(itrRemain, sampleCount);
-                train(x, y, steps, gen);
+                learningRate = train(x, y, steps, iterationsOffset, learningRate, learningLoss);
                 itrRemain -= steps;
-                gen += steps;
+                iterationsOffset += steps;
 
                 if (itrRemain == 0)
                     break;
             }
         }
+
+        return learningRate;
     }
 
-    public void train(Matrix x, Matrix y, int iterations, int iterationOffset)
+    public void train(Matrix x, Matrix y, int iterations)
+    {
+        train(x, y, iterations, 0, 0.1f, 0.999f);
+    }
+
+    public float train(Matrix x, Matrix y, int iterations, int iterationOffset, float learningRate, float learningLoss)
     {
         Matrix[] l = new Matrix[layers.length + 1];
         Matrix[] error = new Matrix[layers.length];
@@ -121,8 +134,12 @@ public class NeuralNetwork
             }
 
             for (int i = 0; i < layers.length; i++)
-                layers[i] = mul(add(layers[i], dot(transpose(l[i]), delta[i])), 1f);
+                layers[i] = add(layers[i], mul(dot(transpose(l[i]), delta[i]), learningRate));
+
+            learningRate *= learningLoss;
         }
+
+        return learningRate;
     }
 
     public Matrix run(Matrix in)
@@ -136,7 +153,7 @@ public class NeuralNetwork
         return l[l.length - 1];
     }
 
-    private float meanError(Matrix a)
+    public float meanError(Matrix a)
     {
         double f = 0f;
 
@@ -243,6 +260,7 @@ public class NeuralNetwork
 
     private float sigmoid(float x)
     {
+        x = Math.min(15, Math.max(-15, x));
         return 1f / (1f + (float)Math.exp(-x));
     }
 

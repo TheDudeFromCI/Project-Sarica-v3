@@ -15,46 +15,74 @@ public class HandwrittenDigitRecognitionTest
     {
         ClassificationDatabase database = new ClassificationDatabase(28 * 28, 10);
         loadDatabase(database);
-        NeuralNetwork nn = new NeuralNetwork(28 * 28, 24, 16, 10);
+        NeuralNetwork nn = new NeuralNetwork(28 * 28, 32, 16, 12, 10);
 
         System.out.println("Starting training");
-        nn.train(database, 3, 25000);
 
-        System.out.println("Training Complete. Results:");
+        float learningRate = 0.1f;
+        float learningLoss = 0.9999f;
+        for (int gen = 0; gen < 1000; gen++)
         {
-            int randomImageSamples = 10;
-            ClassifierExample[] tests = new ClassifierExample[randomImageSamples];
-            for (int i = 0; i < randomImageSamples; i++)
-                tests[i] = database.randomTest();
+            learningRate = nn.train(database, 100, 1000, gen * 1000, learningRate, learningLoss);
 
-            Matrix m = new Matrix(randomImageSamples, 28 * 28);
-            for (int r = 0; r < randomImageSamples; r++)
+            System.out.println();
+            System.out.println("Test Progress: ");
             {
-                for (int c = 0; c < 28 * 28; c++)
-                    m.setValue(r, c, tests[r].getInput(c));
-            }
-            m = nn.run(m);
+                Matrix x = new Matrix(database.getTestCount(), database.getInputCount());
+                Matrix y = new Matrix(database.getTestCount(), database.getOutputCount());
+                for (int r = 0; r < x.getRows(); r++)
+                {
+                    for (int c = 0; c < x.getCols(); c++)
+                        x.setValue(r, c, database.getTest(r).getInput(c));
+                    for (int c = 0; c < y.getCols(); c++)
+                        y.setValue(r, c, database.getTest(r).getOutput(c));
+                }
 
-            System.out.println(round(m));
-            System.out.println("\nReal Answers:");
-            for (int i = 0; i < randomImageSamples; i++)
-            {
-                for (int n = 0; n < 10; n++)
-                    if (tests[i].getOutput(n) > 0)
-                        System.out.println(n);
+                Matrix e = nn.run(x);
+                Matrix rounded = round(e);
+                e = sub(e, y);
+
+                int correct = 0;
+                counter:for (int i = 0; i < rounded.getRows(); i++)
+                {
+                    for (int c = 0; c < rounded.getCols(); c++)
+                        if (Math.abs(rounded.getValue(i, c) - y.getValue(i, c)) > 0.001f)
+                            continue counter;
+                    correct++;
+                }
+
+                System.out.println(" Test Error: " + nn.meanError(e));
+                System.out.println(" Rate: " + String.format("%.3f", (float)correct / rounded.getRows() * 100f) + "%");
+                System.out.println(" LR: " + learningRate);
             }
+            System.out.println();
         }
     }
 
-    private static Matrix round(Matrix m)
+    private static Matrix sub(Matrix a, Matrix b)
     {
-        Matrix c = new Matrix(m.getRows(), m.getCols());
+        if (a.getRows() != b.getRows() || a.getCols() != b.getCols())
+            throw new IllegalArgumentException("Matrix sizes do not match!");
 
-        for (int i = 0; i < m.getValueCount(); i++)
-            c.setValueByIndex(i, Math.round(m.getValueByIndex(i)));
+        Matrix c = new Matrix(a.getRows(), a.getCols());
+
+        for (int row = 0; row < a.getRows(); row++)
+            for (int col = 0; col < a.getCols(); col++)
+                c.setValue(row, col, a.getValue(row, col) - b.getValue(row, col));
 
         return c;
     }
+
+    private static Matrix round(Matrix a)
+    {
+        Matrix m = new Matrix(a.getRows(), a.getCols());
+
+        for (int i = 0; i < a.getValueCount(); i++)
+            m.setValueByIndex(i, Math.round(a.getValueByIndex(i)));
+
+        return m;
+    }
+
 
     private static void loadDatabase(ClassificationDatabase database)
     {

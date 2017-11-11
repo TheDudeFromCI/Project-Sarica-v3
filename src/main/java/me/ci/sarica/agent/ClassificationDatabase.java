@@ -70,6 +70,8 @@ public class ClassificationDatabase
         return examples.get(index);
     }
 
+    public ClassifierExample getTest(int index){ return tests.get(index); }
+
     public int getInputCount()
     {
         return inputCount;

@@ -103,7 +103,7 @@ public class BinaryDigitCountingTest
             }
         }
 
-        NeuralNetwork nn = new NeuralNetwork(3, 6, 3);
+        NeuralNetwork nn = new NeuralNetwork(3, 12, 3);
 
         System.out.println("Starting training");
         nn.train(database, -1, 60000);
@@ -111,12 +111,58 @@ public class BinaryDigitCountingTest
 
         System.out.println("Training Complete. Results:");
         {
-            Matrix m = new Matrix(8, 3);
-            for (int r = 0; r < 8; r++)
-                for (int c = 0; c < 3; c++)
-                    m.setValue(r, 2 - c, (r & (1 << c)) > 0 ? 1f : 0f);
-            m = nn.run(m);
-            System.out.println(m);
+            Matrix x = new Matrix(database.getTestCount(), database.getInputCount());
+            Matrix y = new Matrix(database.getTestCount(), database.getOutputCount());
+            for (int r = 0; r < x.getRows(); r++)
+            {
+                for (int c = 0; c < x.getCols(); c++)
+                    x.setValue(r, c, database.getTest(r).getInput(c));
+                for (int c = 0; c < y.getCols(); c++)
+                    y.setValue(r, c, database.getTest(r).getOutput(c));
+            }
+
+            Matrix e = nn.run(x);
+            Matrix rounded = round(e);
+            e = sub(e, y);
+
+            int correct = 0;
+            counter:for (int i = 0; i < rounded.getRows(); i++)
+            {
+                for (int c = 0; c < rounded.getCols(); c++)
+                    if (Math.abs(rounded.getValue(i, c) - y.getValue(i, c)) > 0.001f)
+                        continue counter;
+                correct++;
+            }
+
+            System.out.println(" Test Error: " + nn.meanError(e));
+            System.out.println(" Rate: " + String.format("%.3f", (float)correct / rounded.getRows() * 100f) + "%");
+
+            System.out.println();
+            System.out.println(rounded);
         }
+    }
+
+    private static Matrix sub(Matrix a, Matrix b)
+    {
+        if (a.getRows() != b.getRows() || a.getCols() != b.getCols())
+            throw new IllegalArgumentException("Matrix sizes do not match!");
+
+        Matrix c = new Matrix(a.getRows(), a.getCols());
+
+        for (int row = 0; row < a.getRows(); row++)
+            for (int col = 0; col < a.getCols(); col++)
+                c.setValue(row, col, a.getValue(row, col) - b.getValue(row, col));
+
+        return c;
+    }
+
+    private static Matrix round(Matrix a)
+    {
+        Matrix m = new Matrix(a.getRows(), a.getCols());
+
+        for (int i = 0; i < a.getValueCount(); i++)
+            m.setValueByIndex(i, Math.round(a.getValueByIndex(i)));
+
+        return m;
     }
 }
