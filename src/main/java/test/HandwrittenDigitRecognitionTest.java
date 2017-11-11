@@ -39,8 +39,8 @@ public class HandwrittenDigitRecognitionTest
                 }
 
                 Matrix e = nn.run(x);
-                Matrix rounded = round(e);
-                e = sub(e, y);
+                Matrix rounded = e.round();
+                e = e.sub(y);
 
                 int correct = 0;
                 counter:for (int i = 0; i < rounded.getRows(); i++)
@@ -51,38 +51,13 @@ public class HandwrittenDigitRecognitionTest
                     correct++;
                 }
 
-                System.out.println(" Test Error: " + nn.meanError(e));
+                System.out.println(" Test Error: " + e.meanError());
                 System.out.println(" Rate: " + String.format("%.3f", (float)correct / rounded.getRows() * 100f) + "%");
                 System.out.println(" LR: " + learningRate);
             }
             System.out.println();
         }
     }
-
-    private static Matrix sub(Matrix a, Matrix b)
-    {
-        if (a.getRows() != b.getRows() || a.getCols() != b.getCols())
-            throw new IllegalArgumentException("Matrix sizes do not match!");
-
-        Matrix c = new Matrix(a.getRows(), a.getCols());
-
-        for (int row = 0; row < a.getRows(); row++)
-            for (int col = 0; col < a.getCols(); col++)
-                c.setValue(row, col, a.getValue(row, col) - b.getValue(row, col));
-
-        return c;
-    }
-
-    private static Matrix round(Matrix a)
-    {
-        Matrix m = new Matrix(a.getRows(), a.getCols());
-
-        for (int i = 0; i < a.getValueCount(); i++)
-            m.setValueByIndex(i, Math.round(a.getValueByIndex(i)));
-
-        return m;
-    }
-
 
     private static void loadDatabase(ClassificationDatabase database)
     {

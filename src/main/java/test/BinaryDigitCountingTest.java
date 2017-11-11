@@ -134,7 +134,7 @@ public class BinaryDigitCountingTest
                 correct++;
             }
 
-            System.out.println(" Test Error: " + nn.meanError(e));
+            System.out.println(" Test Error: " + e.meanError());
             System.out.println(" Rate: " + String.format("%.3f", (float)correct / rounded.getRows() * 100f) + "%");
 
             System.out.println();

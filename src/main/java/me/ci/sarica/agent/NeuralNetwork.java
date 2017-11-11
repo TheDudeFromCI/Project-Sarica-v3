@@ -119,22 +119,22 @@ public class NeuralNetwork
         {
             l[0] = x;
             for (int i = 1; i < l.length; i++)
-                l[i] = sigmoid(dot(l[i - 1], layers[i - 1]));
+                l[i] = l[i - 1].dot(layers[i - 1]).sigmoid();
 
-            error[lastLayer] = sub(y, l[layerValueLayer]);
-            delta[lastLayer] = mul(error[lastLayer], sigmoidDeriv(l[layerValueLayer]));
+            error[lastLayer] = y.sub(l[layerValueLayer]);
+            delta[lastLayer] = error[lastLayer].mul(l[layerValueLayer].sigmoidDeriv());
 
             if ((itr + iterationOffset) % 50 == 0)
-                System.out.println("Iteration " + (itr + iterationOffset) + ": " + meanError(error[lastLayer]));
+                System.out.println("Iteration " + (itr + iterationOffset) + ": " + error[lastLayer].meanError());
 
             for (int i = layers.length - 2; i >= 0; i--)
             {
-                error[i] = dot(delta[i + 1], transpose(layers[i + 1]));
-                delta[i] = mul(error[i], sigmoidDeriv(l[i + 1]));
+                error[i] = delta[i + 1].dot(layers[i + 1].transpose());
+                delta[i] = error[i].mul(l[i + 1].sigmoidDeriv());
             }
 
             for (int i = 0; i < layers.length; i++)
-                layers[i] = add(layers[i], mul(dot(transpose(l[i]), delta[i]), learningRate));
+                layers[i] = layers[i].add(l[i].transpose().dot(delta[i]).mul(learningRate));
 
             learningRate *= learningLoss;
         }
@@ -148,134 +148,8 @@ public class NeuralNetwork
 
         l[0] = in;
         for (int i = 1; i < l.length; i++)
-            l[i] = sigmoid(dot(l[i - 1], layers[i - 1]));
+            l[i] = l[i - 1].dot(layers[i - 1]).sigmoid();
 
         return l[l.length - 1];
-    }
-
-    public float meanError(Matrix a)
-    {
-        double f = 0f;
-
-        for (int i = 0; i < a.getValueCount(); i++)
-            f += Math.abs(a.getValueByIndex(i));
-
-        return (float)(f / a.getValueCount());
-    }
-
-    public Matrix add(Matrix a, Matrix b)
-    {
-        if (a.getRows() != b.getRows() || a.getCols() != b.getCols())
-            throw new IllegalArgumentException("Matrix sizes do not match!");
-
-        Matrix c = new Matrix(a.getRows(), a.getCols());
-
-        for (int row = 0; row < c.getRows(); row++)
-            for (int col = 0; col < c.getCols(); col++)
-                c.setValue(row, col, a.getValue(row, col) + b.getValue(row, col));
-
-        return c;
-    }
-
-    private Matrix transpose(Matrix a)
-    {
-        Matrix c = new Matrix(a.getCols(), a.getRows());
-
-        for (int row = 0; row < c.getRows(); row++)
-            for (int col = 0; col < c.getCols(); col++)
-                c.setValue(row, col, a.getValue(col, row));
-
-        return c;
-    }
-
-    private Matrix dot(Matrix a, Matrix b)
-    {
-        if (a.getCols() != b.getRows())
-            throw new IllegalArgumentException("Matrix sizes do not share side dimension!");
-
-        Matrix c = new Matrix(a.getRows(), b.getCols());
-
-        float[] aVals = a.getValues();
-        float[] bVals = b.getValues();
-
-        for (int row = 0; row < c.getRows(); row++)
-            for (int col = 0; col < c.getCols(); col++)
-            {
-                float v = 0f;
-                for (int j = 0; j < a.getCols(); j++)
-                    v += aVals[j * a.getRows() + row] * bVals[col * b.getRows() + j];
-                c.setValue(row, col, v);
-            }
-
-        return c;
-    }
-
-    private Matrix sub(Matrix a, Matrix b)
-    {
-        if (a.getRows() != b.getRows() || a.getCols() != b.getCols())
-            throw new IllegalArgumentException("Matrix sizes do not match!");
-
-        Matrix c = new Matrix(a.getRows(), a.getCols());
-
-        for (int row = 0; row < a.getRows(); row++)
-            for (int col = 0; col < a.getCols(); col++)
-                c.setValue(row, col, a.getValue(row, col) - b.getValue(row, col));
-
-        return c;
-    }
-
-    private Matrix mul(Matrix a, Matrix b)
-    {
-        if (a.getRows() != b.getRows() || a.getCols() != b.getCols())
-            throw new IllegalArgumentException("Matrix sizes do not match!");
-
-        Matrix c = new Matrix(a.getRows(), a.getCols());
-
-        for (int row = 0; row < c.getRows(); row++)
-            for (int col = 0; col < c.getCols(); col++)
-                c.setValue(row, col, a.getValue(row, col) * b.getValue(row, col));
-
-        return c;
-    }
-
-    private Matrix sigmoid(Matrix m)
-    {
-        Matrix c = new Matrix(m.getRows(), m.getCols());
-
-        for (int i = 0; i < m.getValueCount(); i++)
-            c.setValueByIndex(i, sigmoid(m.getValueByIndex(i)));
-
-        return c;
-    }
-
-    private Matrix mul(Matrix m, float s)
-    {
-        Matrix c = new Matrix(m.getRows(), m.getCols());
-
-        for (int i = 0; i < m.getValueCount(); i++)
-            c.setValueByIndex(i, m.getValueByIndex(i) * s);
-
-        return c;
-    }
-
-    private float sigmoid(float x)
-    {
-        x = Math.min(15, Math.max(-15, x));
-        return 1f / (1f + (float)Math.exp(-x));
-    }
-
-    private float sigmoidDeriv(float x)
-    {
-        return x * (1f - x);
-    }
-
-    private Matrix sigmoidDeriv(Matrix m)
-    {
-        Matrix c = new Matrix(m.getRows(), m.getCols());
-
-        for (int i = 0; i < m.getValueCount(); i++)
-            c.setValueByIndex(i, sigmoidDeriv(m.getValueByIndex(i)));
-
-        return c;
     }
 }
