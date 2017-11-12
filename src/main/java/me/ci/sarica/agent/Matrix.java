@@ -157,16 +157,6 @@ public class Matrix
         return c;
     }
 
-    public Matrix sigmoid()
-    {
-        Matrix c = new Matrix(getRows(), getCols());
-
-        for (int i = 0; i < values.length; i++)
-            c.setValueByIndex(i, sigmoid(values[i]));
-
-        return c;
-    }
-
     public Matrix round()
     {
         Matrix c = new Matrix(getRows(), getCols());
@@ -193,6 +183,16 @@ public class Matrix
         return 1f / (1f + (float)Math.exp(-x));
     }
 
+    public Matrix sigmoid()
+    {
+        Matrix c = new Matrix(getRows(), getCols());
+
+        for (int i = 0; i < values.length; i++)
+            c.setValueByIndex(i, sigmoid(values[i]));
+
+        return c;
+    }
+
     private float sigmoidDeriv(float x)
     {
         return x * (1f - x);
@@ -206,5 +206,83 @@ public class Matrix
             c.setValueByIndex(i, sigmoidDeriv(values[i]));
 
         return c;
+    }
+
+    private float relu(float x)
+    {
+        if (x > 10) x = 10;
+        if (x < -10) x = -10;
+        return x > 0 ? x : x * 0.01f;
+    }
+
+    public Matrix relu()
+    {
+        Matrix c = new Matrix(getRows(), getCols());
+
+        for (int i = 0; i < values.length; i++)
+            c.setValueByIndex(i, relu(values[i]));
+
+        return c;
+    }
+
+    private float reluDeriv(float x)
+    {
+        return x > 0 ? 1f : 0.01f;
+    }
+
+    public Matrix reluDeriv()
+    {
+        Matrix c = new Matrix(getRows(), getCols());
+
+        for (int i = 0; i < values.length; i++)
+            c.setValueByIndex(i, reluDeriv(values[i]));
+
+        return c;
+    }
+
+    public Matrix normalize()
+    {
+        Matrix m = new Matrix(getRows(), getCols());
+
+        for (int r = 0; r < getRows(); r++)
+        {
+            float max = 1f;
+            for (int c = 0; c < getCols(); c++)
+                max = Math.max(max, getValue(r, c));
+            for (int c = 0; c < getCols(); c++)
+                m.setValue(r, c, getValue(r, c) / max);
+        }
+
+        return m;
+    }
+
+    public Matrix addRowVector(Matrix other)
+    {
+        if (getCols() != other.getCols())
+            throw new IllegalArgumentException("Matrices must share same number of columns!");
+        if (other.getRows() != 1)
+            throw new IllegalArgumentException("Vector must have exactly 1 row!");
+
+        Matrix c = new Matrix(getRows(), getCols());
+
+        for (int row = 0; row < getRows(); row++)
+            for (int col = 0; col < getCols(); col++)
+                c.setValue(row, col, getValue(row, col) + other.getValue(0, col));
+
+        return c;
+    }
+
+    public Matrix collapseToColVector()
+    {
+        Matrix m = new Matrix(1, getCols());
+
+        for (int i = 0; i < getCols(); i++)
+        {
+            for (int r = 0; r < getRows(); r++)
+                m.values[i] += getValue(r, i);
+            m.values[i] /= getRows();
+        }
+
+        return m;
     }
 }

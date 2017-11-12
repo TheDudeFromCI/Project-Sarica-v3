@@ -3,6 +3,7 @@ package me.ci.sarica.agent;
 public class NeuralNetwork
 {
     private final Matrix[] layers;
+    private final Matrix[] bias;
     private final int inputs;
     private final int outputs;
 
@@ -13,6 +14,14 @@ public class NeuralNetwork
 
         inputs = layerSizes[0];
         outputs = layerSizes[layerSizes.length - 1];
+
+        bias = new Matrix[layerSizes.length - 1];
+        for (int i = 0; i < bias.length; i++)
+        {
+            bias[i] = new Matrix(1, layerSizes[i + 1]);
+            for (int j = 0; j < bias[i].getCols(); j++)
+                bias[i].setValueByIndex(j, ((float)Math.random() * 2f - 1f) / (float)Math.sqrt(layerSizes[i]));
+        }
 
         layers = new Matrix[layerSizes.length - 1];
         for (int i = 0; i < layers.length; i++)
@@ -34,7 +43,7 @@ public class NeuralNetwork
         Matrix m = new Matrix(inputs, outputs);
 
         for (int i = 0; i < m.getValueCount(); i++)
-            m.setValueByIndex(i, (float)Math.random() * 2f - 1f);
+            m.setValueByIndex(i, ((float)Math.random() * 2f - 1f) / (float)Math.sqrt(inputs));
 
         return m;
     }
@@ -111,35 +120,51 @@ public class NeuralNetwork
         Matrix[] l = new Matrix[layers.length + 1];
         Matrix[] error = new Matrix[layers.length];
         Matrix[] delta = new Matrix[layers.length];
+        Matrix[] delBi = new Matrix[layers.length];
 
         int lastLayer = layers.length - 1;
         int layerValueLayer = l.length - 1;
 
         for (int itr = 0; itr < iterations; itr++)
         {
-            l[0] = x;
+            l[0] = x.add(noiseMatrix(x.getRows(), x.getCols(), 0.5f));
             for (int i = 1; i < l.length; i++)
-                l[i] = l[i - 1].dot(layers[i - 1]).sigmoid();
+                l[i] = l[i - 1].dot(layers[i - 1]).addRowVector(bias[i - 1]).sigmoid();
 
             error[lastLayer] = y.sub(l[layerValueLayer]);
             delta[lastLayer] = error[lastLayer].mul(l[layerValueLayer].sigmoidDeriv());
+            delBi[lastLayer] = error[lastLayer].collapseToColVector();
 
-            if ((itr + iterationOffset) % 50 == 0)
+            if ((itr + iterationOffset) % 100 == 0)
                 System.out.println("Iteration " + (itr + iterationOffset) + ": " + error[lastLayer].meanError());
 
             for (int i = layers.length - 2; i >= 0; i--)
             {
                 error[i] = delta[i + 1].dot(layers[i + 1].transpose());
                 delta[i] = error[i].mul(l[i + 1].sigmoidDeriv());
+                delBi[i] = error[i].collapseToColVector();
             }
 
             for (int i = 0; i < layers.length; i++)
+            {
                 layers[i] = layers[i].add(l[i].transpose().dot(delta[i]).mul(learningRate));
+                bias[i] = bias[i].add(delBi[i].mul(learningRate));
+            }
 
             learningRate *= learningLoss;
         }
 
         return learningRate;
+    }
+
+    private Matrix noiseMatrix(int rows, int cols, float strength)
+    {
+        Matrix m = new Matrix(rows, cols);
+
+        for (int i = 0; i < m.getValueCount(); i++)
+            m.setValueByIndex(i, ((float)Math.random() * 2f - 1f) * strength);
+
+        return m;
     }
 
     public Matrix run(Matrix in)
@@ -148,7 +173,7 @@ public class NeuralNetwork
 
         l[0] = in;
         for (int i = 1; i < l.length; i++)
-            l[i] = l[i - 1].dot(layers[i - 1]).sigmoid();
+            l[i] = l[i - 1].dot(layers[i - 1]).addRowVector(bias[i - 1]).sigmoid();
 
         return l[l.length - 1];
     }
