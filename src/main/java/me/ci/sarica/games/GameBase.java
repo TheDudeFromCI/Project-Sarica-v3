@@ -1,19 +1,14 @@
 package me.ci.sarica.games;
 
+import me.ci.sarica.terminal.Terminal;
+
 public abstract class GameBase implements GameEnvironment
 {
-    protected int pixelsX;
-    protected int pixelsY;
-    protected boolean rgb;
-    protected int audioDuration;
-    protected int hertz;
-    protected int textureSampleSize;
+    protected AgentSensorySettings settings;
 
-    public void initSight(int pixelsX, int pixelsY, boolean rgb)
+    public void initGameData(AgentSensorySettings settings)
     {
-        this.pixelsX = pixelsX;
-        this.pixelsY = pixelsY;
-        this.rgb = rgb;
+        this.settings = settings;
     }
 
     public void updatePixelData(float[] inputs)
@@ -23,22 +18,11 @@ public abstract class GameBase implements GameEnvironment
             inputs[i] = 0f;
     }
 
-    public void initSound(int audioDuration, int hertz)
-    {
-        this.audioDuration = audioDuration;
-        this.hertz = hertz;
-    }
-
     public void updateSoundData(float[] inputs)
     {
         // Fill inputs with complete silence
         for (int i = 0; i < inputs.length; i++)
             inputs[i] = 0f;
-    }
-
-    public void initFeeling(int textureSampleSize)
-    {
-        this.textureSampleSize = textureSampleSize;
     }
 
     public void updateFeeling(float[] inputs)
@@ -55,40 +39,21 @@ public abstract class GameBase implements GameEnvironment
             inputs[i] = 0f;
     }
 
-    public void initCommunication(int sentenceVectorCount, int vectorSize)
-    {
-
-    }
-
-    public void updateCommunicationReceived(float[] inputs)
-    {
-        // Fill inputs with complete numbness
-        for (int i = 0; i < inputs.length; i++)
-            inputs[i] = 0f;
-    }
-
-    public void updateCommunicationSent(float[] outputs)
+    public void updateCommunicationReceived(float[] outputs)
     {
         // Do nothing
     }
 
-    public void initAction(Joystick joystick)
+    public void updateCommunicationSent(float[] inputs)
     {
-
+        // Fill inputs with complete silence
+        for (int i = 0; i < inputs.length; i++)
+            inputs[i] = 0f;
     }
 
-    public void loadGameData()
+    public void initializeRender()
     {
-
-    }
-
-    public void disposeGameData()
-    {
-
-    }
-
-    public void initalizeRender()
-    {
-
+        // Game is assumed to not have a render mode
+        Terminal.logVerbose("Game Base", "Game manager has requested a render window, however none are available.");
     }
 }

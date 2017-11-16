@@ -56,6 +56,31 @@ public class Terminal implements Runnable
         logMessage(ERROR, sender, message);
     }
 
+    public static void logVerbosef(String sender, String message, Object... args)
+    {
+        logMessage(VERBOSE, sender, String.format(message, args));
+    }
+
+    public static void logDebugf(String sender, String message, Object... args)
+    {
+        logMessage(DEBUG, sender, String.format(message, args));
+    }
+
+    public static void logNormalf(String sender, String message, Object... args)
+    {
+        logMessage(NORMAL, sender, String.format(message, args));
+    }
+
+    public static void logWarningf(String sender, String message, Object... args)
+    {
+        logMessage(WARNING, sender, String.format(message, args));
+    }
+
+    public static void logErrorf(String sender, String message, Object... args)
+    {
+        logMessage(ERROR, sender, String.format(message, args));
+    }
+
     public static void logError(String sender, Throwable exception)
     {
         StringWriter sw = new StringWriter();

@@ -1,5 +1,8 @@
 package me.ci.sarica;
 
+import me.ci.sarica.games.AgentSensorySettings;
+import me.ci.sarica.games.GameManager;
+import me.ci.sarica.games.Joystick;
 import me.ci.sarica.terminal.Terminal;
 
 /**
@@ -12,7 +15,7 @@ public class ProjectSarica
 {
     public static void main(String[] args)
     {
-        // Initalize terminal and logging levels
+        // Initialize terminal and logging levels
         Terminal.Instance = new Terminal();
         Terminal.Instance.setConsoleLogLevel(Terminal.DEBUG);
 
@@ -21,8 +24,12 @@ public class ProjectSarica
         // Start main logic
         try
         {
-            // Start agent manager
-            Terminal.logVerbose("System", "Creating agent manager.");
+            Joystick joystick = new Joystick();
+            AgentSensorySettings sensorySettings = new AgentSensorySettings(20, 15, true, 0, 0, 0, 0, 0,
+                                                                               joystick);
+            GameManager gameManager = new GameManager(sensorySettings);
+
+            // TODO Insert learning agent to train on.
         }
         catch(Exception exception)
         {
