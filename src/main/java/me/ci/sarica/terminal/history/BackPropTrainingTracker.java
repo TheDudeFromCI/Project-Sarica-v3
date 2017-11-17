@@ -4,23 +4,37 @@ import me.ci.sarica.agent.BackPropTrainingListener;
 import me.ci.sarica.agent.ClassificationDatabase;
 import me.ci.sarica.agent.BackPropagation;
 import me.ci.sarica.agent.Matrix;
+import me.ci.sarica.terminal.Terminal;
 
 public class BackPropTrainingTracker implements BackPropTrainingListener
 {
 	private final LineGraph error;
 	private final LineGraph accuracy;
 	private final ClassificationDatabase database;
+	private float smoothedMeanError;
+	private int iterationIndex;
 
 	public BackPropTrainingTracker(ClassificationDatabase database)
 	{
 		error = new LineGraph("Error", 0f, 0.5f);
 		accuracy = new LineGraph("Accuracy", 0f, 1f);
 		this.database = database;
+
+		Terminal.logVerbose("BP Training Tracker", "Created back propagation training tracker.");
 	}
 
 	public void onTrainingIterationComplete(BackPropagation backProp)
 	{
-		error.addValue(backProp.getLastMeanError());
+		iterationIndex++;
+		float meanError = backProp.getLastMeanError();
+		error.addValue(meanError);
+		smoothedMeanError += meanError;
+
+		if (iterationIndex % 25 == 0)
+		{
+			Terminal.logVerbosef("BP Training Tracker", "Completed iteration %d. Average Mean Error: %.03f", iterationIndex, smoothedMeanError / 25f);
+			smoothedMeanError = 0f;
+		}
 	}
 
 	public void onTrainingBatchComplete(BackPropagation backProp)
@@ -48,6 +62,9 @@ public class BackPropTrainingTracker implements BackPropTrainingListener
 			correct++;
 		}
 
-		accuracy.addValue((float)correct / rounded.getRows());
+		float percentCorrect = (float)correct / rounded.getRows();
+		accuracy.addValue(percentCorrect);
+
+		Terminal.logNormalf("BP Training Tracker", "Completed training batch. Test accuracy: %.03f", percentCorrect);
 	}
 }

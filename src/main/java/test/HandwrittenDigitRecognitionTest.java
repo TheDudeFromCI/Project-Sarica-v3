@@ -7,6 +7,7 @@ import me.ci.sarica.agent.NeuralNetwork;
 import me.ci.sarica.terminal.history.LineGraph;
 import me.ci.sarica.agent.NeuralNetworkBuilder;
 import me.ci.sarica.terminal.history.BackPropTrainingTracker;
+import me.ci.sarica.terminal.Terminal;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -16,10 +17,12 @@ public class HandwrittenDigitRecognitionTest
 {
     public static void main(String[] args)
     {
+		Terminal.logNormal("Tests", "Launching test 'Handwritten Digit Recognition'.");
+
         ClassificationDatabase database = new ClassificationDatabase(28 * 28, 10);
         loadDatabase(database);
 
-		NeuralNetwork nn = new NeuralNetworkBuilder(28 * 28, 32, 24, 12, 10).addBias()
+		NeuralNetwork nn = new NeuralNetworkBuilder(28 * 28, 128, 64, 32, 10).addBias()
 			.addBackPropagation(0.1f, 0.99995f, 0.5f).addBackPropListener(new BackPropTrainingTracker(database))
 			.build();
 
@@ -49,6 +52,8 @@ public class HandwrittenDigitRecognitionTest
                         example.setOutput(l, labels[i] == l ? 1f : 0f);
                     database.addExample(example);
                 }
+
+				Terminal.logVerbosef("Tests", "Loaded database of %d training images.", images.length);
             }
 
             // Test
@@ -67,6 +72,8 @@ public class HandwrittenDigitRecognitionTest
                         example.setOutput(l, labels[i] == l ? 1f : 0f);
                     database.addTest(example);
                 }
+
+				Terminal.logVerbosef("Tests", "Loaded database of %d testing images.", images.length);
             }
         }
         catch(Exception exception)
