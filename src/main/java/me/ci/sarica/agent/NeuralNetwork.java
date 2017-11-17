@@ -43,6 +43,7 @@ public class NeuralNetwork
     public void addBackPropagationSupport(BackPropagation backProp)
     {
 		this.backProp = backProp;
+		backProp.initialize(this);
 		backProp.attachWeightMatrix(layers);
 
 		if (bias != null)

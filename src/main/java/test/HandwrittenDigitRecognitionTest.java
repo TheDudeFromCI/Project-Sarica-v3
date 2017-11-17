@@ -6,6 +6,7 @@ import me.ci.sarica.agent.Matrix;
 import me.ci.sarica.agent.NeuralNetwork;
 import me.ci.sarica.terminal.history.LineGraph;
 import me.ci.sarica.agent.NeuralNetworkBuilder;
+import me.ci.sarica.terminal.history.BackPropTrainingTracker;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -15,50 +16,15 @@ public class HandwrittenDigitRecognitionTest
 {
     public static void main(String[] args)
     {
-        LineGraph graph = new LineGraph("Handwritten Digit Recognition Training Error");
-
         ClassificationDatabase database = new ClassificationDatabase(28 * 28, 10);
         loadDatabase(database);
 
-		NeuralNetwork nn = new NeuralNetworkBuilder(28 * 28, 64, 16, 12, 10).addBias().addBackPropagation(0.1f, 0.99995f, 0.5f).build();
+		NeuralNetwork nn = new NeuralNetworkBuilder(28 * 28, 32, 24, 12, 10).addBias()
+			.addBackPropagation(0.1f, 0.99995f, 0.5f).addBackPropListener(new BackPropTrainingTracker(database))
+			.build();
 
-        System.out.println("Starting training");
-
-        for (int gen = 0; gen < 1000; gen++)
-        {
-            nn.getBackPropagation().train(database, 100, 1000, graph);
-
-            System.out.println();
-            System.out.println("Test Progress: ");
-            {
-                Matrix x = new Matrix(database.getTestCount(), database.getInputCount());
-                Matrix y = new Matrix(database.getTestCount(), database.getOutputCount());
-                for (int r = 0; r < x.getRows(); r++)
-                {
-                    for (int c = 0; c < x.getCols(); c++)
-                        x.setValue(r, c, database.getTest(r).getInput(c));
-                    for (int c = 0; c < y.getCols(); c++)
-                        y.setValue(r, c, database.getTest(r).getOutput(c));
-                }
-
-                Matrix e = nn.run(x);
-                Matrix rounded = e.round();
-                e = e.sub(y);
-
-                int correct = 0;
-                counter:for (int i = 0; i < rounded.getRows(); i++)
-                {
-                    for (int c = 0; c < rounded.getCols(); c++)
-                        if (Math.abs(rounded.getValue(i, c) - y.getValue(i, c)) > 0.001f)
-                            continue counter;
-                    correct++;
-                }
-
-                System.out.println(" Test Error: " + e.meanError());
-                System.out.println(" Rate: " + String.format("%.3f", (float)correct / rounded.getRows() * 100f) + "%");
-            }
-            System.out.println();
-        }
+        for (int gen = 0; gen < 100; gen++)
+            nn.getBackPropagation().train(database, 100, 1000);
     }
 
     private static void loadDatabase(ClassificationDatabase database)

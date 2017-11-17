@@ -32,6 +32,16 @@ public class NeuralNetworkBuilder
         return this;
     }
 
+	public NeuralNetworkBuilder addBackPropListener(BackPropTrainingListener listener)
+	{
+		if (backPropagation == null)
+			throw new IllegalArgumentException("Back Propagation not yet initialized!");
+
+		backPropagation.addListener(listener);
+
+		return this;
+	}
+
     public NeuralNetwork build()
     {
         NeuralNetwork nn = new NeuralNetwork(layerSizes);

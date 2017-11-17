@@ -10,17 +10,26 @@ public class LineGraph
     private final LinkedList<Float> values = new LinkedList<Float>();
     private final JFrame frame;
     private final Renderer renderer;
-    private float min = Float.POSITIVE_INFINITY;
-    private float max = Float.NEGATIVE_INFINITY;
+    private float min;
+    private float max;
 
-    public LineGraph(String title)
+	public LineGraph(String title)
+	{
+		this(title, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY);
+	}
+
+    public LineGraph(String title, float min, float max)
     {
+		this.min = min;
+		this.max = max;
+
         frame = new JFrame();
         frame.setTitle(title);
         frame.setResizable(true);
         frame.setSize(400, 300);
         frame.add(renderer = new Renderer());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
@@ -37,6 +46,8 @@ public class LineGraph
 
     private class Renderer extends JPanel
     {
+		private static final long serialVersionUID = 32908450;
+
         @Override
         public void paint(Graphics g1)
         {

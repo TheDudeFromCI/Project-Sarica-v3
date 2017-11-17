@@ -12,6 +12,29 @@ public class BackPropagation
 	private Matrix[] bias;
 	private int inputs;
 	private int outputs;
+	private BackPropTrainingListener listener;
+	private float meanError;
+	private NeuralNetwork nn;
+
+	public void initialize(NeuralNetwork nn)
+	{
+		this.nn = nn;
+	}
+
+	public NeuralNetwork getNeuralNetwork()
+	{
+		return nn;
+	}
+
+	public void addListener(BackPropTrainingListener listener)
+	{
+		this.listener = listener;
+	}
+
+	public float getLastMeanError()
+	{
+		return meanError;
+	}
 
 	public void attachWeightMatrix(Matrix[] layers)
 	{
@@ -25,7 +48,7 @@ public class BackPropagation
 		this.bias = bias;
 	}
 
-    public void addIteration()
+    private void addIteration()
     {
         iterationsCompleted++;
         learningRate *= learningLoss;
@@ -66,7 +89,7 @@ public class BackPropagation
         learningLoss = loss;
     }
 
-    public void train(ClassificationDatabase database, int sampleCount, int iterations, LineGraph graph)
+    public void train(ClassificationDatabase database, int sampleCount, int iterations)
     {
         if (database.getInputCount() != inputs)
             throw new IllegalArgumentException("Database input count does not match network input count!");
@@ -91,7 +114,7 @@ public class BackPropagation
                     y.setValue(i, n, ex.getOutput(n));
             }
 
-            train(x, y, iterations, graph);
+            train(x, y, iterations);
         }
         else
         {
@@ -110,7 +133,7 @@ public class BackPropagation
                 }
 
                 int steps = Math.min(itrRemain, sampleCount);
-                train(x, y, steps, graph);
+                train(x, y, steps);
                 itrRemain -= steps;
 
                 if (itrRemain == 0)
@@ -119,12 +142,7 @@ public class BackPropagation
         }
     }
 
-	public void train(Matrix x, Matrix y, int iterations)
-    {
-        train(x, y, iterations, null);
-    }
-
-    public void train(Matrix x, Matrix y, int iterations, LineGraph graph)
+    public void train(Matrix x, Matrix y, int iterations)
     {
         Matrix[] l = new Matrix[layers.length + 1];
         Matrix[] error = new Matrix[layers.length];
@@ -151,10 +169,7 @@ public class BackPropagation
             delta[lastLayer] = error[lastLayer].mul(l[layerValueLayer].sigmoidDeriv());
             delBi[lastLayer] = error[lastLayer].collapseToColVector();
 
-            float mE = error[lastLayer].meanError();
-            if (graph != null) graph.addValue(mE);
-            if (iterationsCompleted % 100 == 0)
-                System.out.println("Iteration " + iterationsCompleted + ": " + mE);
+			meanError = error[lastLayer].meanError();
 
             for (int i = layers.length - 2; i >= 0; i--)
             {
@@ -174,7 +189,13 @@ public class BackPropagation
             }
 
 			addIteration();
+
+			if (listener != null)
+				listener.onTrainingIterationComplete(this);
         }
+
+		if (listener != null)
+			listener.onTrainingBatchComplete(this);
     }
 
     private Matrix noiseMatrix(int rows, int cols, float strength)
