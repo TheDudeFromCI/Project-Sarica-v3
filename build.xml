@@ -1,0 +1,27 @@
+<project>
+
+  <property name="main.class" value="test.HandwrittenDigitRecognitionTest"/>
+
+  <target name="clean">
+    <delete dir="build"/>
+  </target>
+
+  <target name="compile" depends="clean">
+    <mkdir dir="build/classes"/>
+    <javac srcdir="src" destdir="build/classes"/>
+  </target>
+
+  <target name="jar" depends="compile">
+    <mkdir dir="build/jar"/>
+    <jar destfile="build/jar/ProjectSarica.jar" basedir="build/classes">
+      <manifest>
+        <attribute name="Main-Class" value="${main.class}"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="run" depends="jar">
+    <java jar="build/jar/ProjectSarica.jar" fork="true"/>
+  </target>
+
+</project>

@@ -4,6 +4,8 @@ import me.ci.sarica.agent.ClassificationDatabase;
 import me.ci.sarica.agent.ClassifierExample;
 import me.ci.sarica.agent.Matrix;
 import me.ci.sarica.agent.NeuralNetwork;
+import me.ci.sarica.terminal.history.LineGraph;
+import me.ci.sarica.agent.NeuralNetworkBuilder;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -13,18 +15,18 @@ public class HandwrittenDigitRecognitionTest
 {
     public static void main(String[] args)
     {
+        LineGraph graph = new LineGraph("Handwritten Digit Recognition Training Error");
+
         ClassificationDatabase database = new ClassificationDatabase(28 * 28, 10);
         loadDatabase(database);
-//        addNoise(database, 18000, 0);
-        NeuralNetwork nn = new NeuralNetwork(28 * 28, 32, 16, 12, 10);
+
+		NeuralNetwork nn = new NeuralNetworkBuilder(28 * 28, 64, 16, 12, 10).addBias().addBackPropagation(0.1f, 0.99995f, 0.5f).build();
 
         System.out.println("Starting training");
 
-        float learningRate = 0.1f;
-        float learningLoss = 0.99995f;
         for (int gen = 0; gen < 1000; gen++)
         {
-            learningRate = nn.train(database, 100, 10000, gen * 10000, learningRate, learningLoss);
+            nn.getBackPropagation().train(database, 100, 1000, graph);
 
             System.out.println();
             System.out.println("Test Progress: ");
@@ -54,7 +56,6 @@ public class HandwrittenDigitRecognitionTest
 
                 System.out.println(" Test Error: " + e.meanError());
                 System.out.println(" Rate: " + String.format("%.3f", (float)correct / rounded.getRows() * 100f) + "%");
-                System.out.println(" LR: " + learningRate);
             }
             System.out.println();
         }
@@ -105,29 +106,6 @@ public class HandwrittenDigitRecognitionTest
         catch(Exception exception)
         {
             exception.printStackTrace();
-        }
-    }
-
-    private static void addNoise(ClassificationDatabase database, int examples, int tests)
-    {
-        for (int i = 0; i < examples; i++)
-        {
-            ClassifierExample example = new ClassifierExample(28 * 28, 10);
-            for (int p = 0; p < example.getInputCount(); p++)
-                example.setInput(p, (float)Math.random());
-            for (int p = 0; p < example.getOutputCount(); p++)
-                example.setOutput(p, 0f);
-            database.addExample(example);
-        }
-
-        for (int i = 0; i < tests; i++)
-        {
-            ClassifierExample example = new ClassifierExample(28 * 28, 10);
-            for (int p = 0; p < example.getInputCount(); p++)
-                example.setInput(p, (float)Math.random());
-            for (int p = 0; p < example.getOutputCount(); p++)
-                example.setOutput(p, 0f);
-            database.addTest(example);
         }
     }
 
