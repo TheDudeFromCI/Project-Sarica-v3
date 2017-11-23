@@ -1,6 +1,8 @@
 package me.ci.sarica.terminal;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
@@ -20,6 +22,72 @@ public class Terminal implements Runnable
     public static final int WARNING = 3;
     public static final int ERROR = 4;
 
+    public static Terminal Instance;
+
+    public static void logMessage(int level, String sender, String message)
+    {
+        if (Instance == null)
+            Instance = new Terminal();
+        Instance.log(level, sender, message);
+    }
+
+    public static void logVerbose(String sender, String message)
+    {
+        logMessage(VERBOSE, sender, message);
+    }
+
+    public static void logDebug(String sender, String message)
+    {
+        logMessage(DEBUG, sender, message);
+    }
+
+    public static void logNormal(String sender, String message)
+    {
+        logMessage(NORMAL, sender, message);
+    }
+
+    public static void logWarning(String sender, String message)
+    {
+        logMessage(WARNING, sender, message);
+    }
+
+    public static void logError(String sender, String message)
+    {
+        logMessage(ERROR, sender, message);
+    }
+
+    public static void logVerbosef(String sender, String message, Object... args)
+    {
+        logMessage(VERBOSE, sender, String.format(message, args));
+    }
+
+    public static void logDebugf(String sender, String message, Object... args)
+    {
+        logMessage(DEBUG, sender, String.format(message, args));
+    }
+
+    public static void logNormalf(String sender, String message, Object... args)
+    {
+        logMessage(NORMAL, sender, String.format(message, args));
+    }
+
+    public static void logWarningf(String sender, String message, Object... args)
+    {
+        logMessage(WARNING, sender, String.format(message, args));
+    }
+
+    public static void logErrorf(String sender, String message, Object... args)
+    {
+        logMessage(ERROR, sender, String.format(message, args));
+    }
+
+    public static void logError(String sender, Throwable exception)
+    {
+        StringWriter sw = new StringWriter();
+        exception.printStackTrace(new PrintWriter(sw));
+        logError(sender, sw.toString());
+    }
+
     private final LinkedList<LogMessage> messageQueue;
     private final LinkedList<LogMessage> pool;
     private final String path;
@@ -33,6 +101,10 @@ public class Terminal implements Runnable
 
     public Terminal()
     {
+        if (Instance != null)
+            Instance.shutdown();
+        Instance = this;
+
         path = System.getProperty("user.dir") + File.separatorChar + "log";
         messageQueue = new LinkedList<LogMessage>();
         pool = new LinkedList<LogMessage>();
@@ -60,6 +132,11 @@ public class Terminal implements Runnable
         }
 
         logThread = null;
+    }
+
+    public boolean isClosed()
+    {
+        return logThread == null;
     }
 
     public int getConsoleLogLevel()
@@ -97,6 +174,8 @@ public class Terminal implements Runnable
                 return "NORMAL";
             case WARNING:
                 return "WARNING";
+            case ERROR:
+                return "ERROR";
 
             default:
                 return "UNDEFINED";
@@ -168,11 +247,31 @@ public class Terminal implements Runnable
     public void run()
     {
         boolean empty;
+        LogMessage message;
+
         while (running)
         {
-            synchronized (messageQueue)
+            while (true)
             {
-                empty = messageQueue.isEmpty();
+                synchronized (messageQueue)
+                {
+                    if (empty = messageQueue.isEmpty())
+                        break;
+                    message = messageQueue.removeFirst();
+                }
+
+                String levelName = getLogLevelName(message.level);
+                String timeStamp = getTimeStamp(message.time);
+                String text = String.format("[%s][%s][%s] %s", timeStamp, levelName, message.sender, message.message);
+
+                if (message.level >= logConsoleLevel)
+                    logToConsole(text);
+                if (message.level >= logAgentLevel)
+                    logToAgent(text);
+                if (message.level >= logFileLevel)
+                    logToFile(text);
+
+                discardLogMessage(message);
             }
 
             if (empty)
@@ -181,29 +280,7 @@ public class Terminal implements Runnable
                 { Thread.sleep(1); }
                 catch (InterruptedException e)
                 { e.printStackTrace(); }
-
-                continue;
             }
-
-            LogMessage message;
-
-            synchronized (messageQueue)
-            {
-                message = messageQueue.removeFirst();
-            }
-
-            String levelName = getLogLevelName(message.level);
-            String timeStamp = getTimeStamp(message.time);
-            String text = String.format("[%s][%s][%s] %s", levelName, timeStamp, message.sender, message.message);
-
-            if (message.level >= logConsoleLevel)
-                logToConsole(text);
-            if (message.level >= logAgentLevel)
-                logToAgent(text);
-            if (message.level >= logFileLevel)
-                logToFile(text);
-
-            discardLogMessage(message);
         }
     }
 
