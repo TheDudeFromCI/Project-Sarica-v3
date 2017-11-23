@@ -1,34 +1,22 @@
-package test;
+package test.handwritten_digits;
 
 import me.ci.sarica.agent.ClassificationDatabase;
 import me.ci.sarica.agent.ClassifierExample;
-import me.ci.sarica.agent.Matrix;
-import me.ci.sarica.agent.NeuralNetwork;
-import me.ci.sarica.terminal.history.LineGraph;
-import me.ci.sarica.agent.NeuralNetworkBuilder;
-import me.ci.sarica.terminal.history.BackPropTrainingTracker;
 import me.ci.sarica.terminal.Terminal;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 
-public class HandwrittenDigitRecognitionTest
+public abstract class HandwrittenDigitBase
 {
-    public static void main(String[] args)
-    {
-		Terminal.logNormal("Tests", "Launching test 'Handwritten Digit Recognition'.");
-
-        ClassificationDatabase database = new ClassificationDatabase(28 * 28, 10);
-        loadDatabase(database);
-
-		NeuralNetwork nn = new NeuralNetworkBuilder(28 * 28, 128, 64, 32, 10).addBias()
-			.addBackPropagation(0.1f, 0.99995f, 0.5f).addBackPropListener(new BackPropTrainingTracker(database))
-			.build();
-
-        for (int gen = 0; gen < 100; gen++)
-            nn.getBackPropagation().train(database, 100, 1000);
-    }
+	public static ClassificationDatabase loadDatabase()
+	{
+		Terminal.logVerbose("Tests", "Loading handwritten digit classification database.");
+		ClassificationDatabase db = new ClassificationDatabase(28 * 28, 10);
+		loadDatabase(db);
+		return db;
+	}
 
     private static void loadDatabase(ClassificationDatabase database)
     {

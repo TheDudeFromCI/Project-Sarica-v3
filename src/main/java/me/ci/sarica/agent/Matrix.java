@@ -13,6 +13,16 @@ public class Matrix
         values = new float[rows * cols];
     }
 
+	public Matrix(Matrix m)
+	{
+		rows = m.rows;
+		cols = m.cols;
+		values = new float[rows * cols];
+
+		for (int i = 0; i < values.length; i++)
+			values[i] = m.values[i];
+	}
+
     public int getRows()
     {
         return rows;
@@ -85,18 +95,26 @@ public class Matrix
         return (float)(f / values.length);
     }
 
-    public Matrix add(Matrix other)
+	public Matrix add(Matrix other)
+	{
+		return add(other, null);
+	}
+
+    public Matrix add(Matrix other, Matrix dest)
     {
-        if (getRows() != other.getRows() || getCols() != other.getCols())
+        if (rows != other.rows || cols != other.cols)
             throw new IllegalArgumentException("Matrix sizes do not match!");
 
-        Matrix c = new Matrix(getRows(), getCols());
+		if (dest == null)
+			dest = new Matrix(rows, cols);
+		else if (dest.rows != rows || dest.cols != cols)
+			throw new IllegalArgumentException("Destination matrix is not the correct size!");
 
-        for (int row = 0; row < c.getRows(); row++)
-            for (int col = 0; col < c.getCols(); col++)
-                c.setValue(row, col, getValue(row, col) + other.getValue(row, col));
+        for (int row = 0; row < rows; row++)
+            for (int col = 0; col < cols; col++)
+                dest.setValue(row, col, getValue(row, col) + other.getValue(row, col));
 
-        return c;
+        return dest;
     }
 
     public Matrix transpose()
