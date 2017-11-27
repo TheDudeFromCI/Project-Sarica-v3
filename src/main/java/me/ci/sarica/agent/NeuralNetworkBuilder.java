@@ -5,6 +5,7 @@ public class NeuralNetworkBuilder
     private int[] layerSizes;
     private boolean bias;
     private BackPropagation backPropagation;
+	private GeneticAlgorithms ga;
 
     public NeuralNetworkBuilder(int... layerSizes)
     {
@@ -32,6 +33,13 @@ public class NeuralNetworkBuilder
         return this;
     }
 
+	public NeuralNetworkBuilder addGeneticAlgorithms(int population, float learningRate)
+	{
+		ga = new GeneticAlgorithms(population);
+		ga.setLearningRate(learningRate);
+		return this;
+	}
+
 	public NeuralNetworkBuilder addBackPropListener(BackPropTrainingListener listener)
 	{
 		if (backPropagation == null)
@@ -50,6 +58,8 @@ public class NeuralNetworkBuilder
 			nn.buildBiasNeurons();
 		if (backPropagation != null)
 			nn.addBackPropagationSupport(backPropagation);
+		if (ga != null)
+			nn.addGeneticAlgorithms(ga);
 
         return nn;
     }

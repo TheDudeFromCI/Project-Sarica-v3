@@ -154,7 +154,7 @@ public class LineGraph
                                 avg /= jump;
                             }
 
-                            int x = Math.round((1f - ((float)i / count)) * (width - sideBuffer) + sideBuffer);
+                            int x = Math.round((1f - ((float)i / count)) * (width - sideBuffer) + sideBuffer - 1f / count * (width - sideBuffer));
                             int y = Math.round((1f - (avg - min) / (max - min)) * (height - bottomBuffer -
                                                                                           topBuffer) + topBuffer);
                             if (i > 0)

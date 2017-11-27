@@ -249,8 +249,10 @@ public class Terminal implements Runnable
         boolean empty;
         LogMessage message;
 
-        while (running)
+		boolean lastRun = false;
+        while (running || lastRun)
         {
+			lastRun = false;
             while (true)
             {
                 synchronized (messageQueue)
@@ -280,6 +282,12 @@ public class Terminal implements Runnable
                 { Thread.sleep(1); }
                 catch (InterruptedException e)
                 { e.printStackTrace(); }
+
+				synchronized (messageQueue)
+                {
+					if (!messageQueue.isEmpty())
+						lastRun = true;
+                }
             }
         }
     }

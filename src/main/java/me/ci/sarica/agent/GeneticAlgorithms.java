@@ -1,0 +1,94 @@
+package me.ci.sarica.agent;
+
+import me.ci.sarica.terminal.history.LineGraph;
+
+import java.util.Arrays;
+
+public class GeneticAlgorithms
+{
+	private int generation;
+	private float learningRate;
+	private Matrix[] layers;
+	private Matrix[] bias;
+	private int inputs;
+	private int outputs;
+	private NeuralNetwork nn;
+	private GAInstance[] instances;
+	private int subGen;
+
+	public GeneticAlgorithms(int population)
+	{
+		instances = new GAInstance[population];
+	}
+
+	public void initialize(NeuralNetwork nn)
+	{
+		this.nn = nn;
+
+		for (int i = 0; i < instances.length; i++)
+			instances[i] = new GAInstance(layers, bias, learningRate);
+		instances[0].loadInstance(layers, bias);
+	}
+
+	public NeuralNetwork getNeuralNetwork()
+	{
+		return nn;
+	}
+
+	public void attachWeightMatrix(Matrix[] layers)
+	{
+		this.layers = layers;
+		inputs = layers[0].getRows();
+		outputs = layers[layers.length - 1].getCols();
+	}
+
+	public void attachBiasMatrix(Matrix[] bias)
+	{
+		this.bias = bias;
+	}
+
+    public void resetGeneration()
+    {
+        generation = 0;
+		subGen = 0;
+    }
+
+    public float getLearningRate()
+    {
+        return learningRate;
+    }
+
+    public void setLearningRate(float rate)
+    {
+        learningRate = rate;
+    }
+
+	public int getGeneration()
+	{
+		return generation;
+	}
+
+	public int getPopulation()
+	{
+		return instances.length;
+	}
+
+	public void scoreAgent(float score)
+	{
+		instances[subGen++].setScore(score);
+
+		if (subGen == instances.length)
+		{
+			subGen = 0;
+			generation++;
+
+			Arrays.sort(instances);
+
+			int half = instances.length / 2;
+			for (int i = 0; i < half; i++)
+				instances[i] = new GAInstance(instances[i + half], learningRate);
+		}
+
+		instances[subGen].loadInstance(layers, bias);
+	}
+}

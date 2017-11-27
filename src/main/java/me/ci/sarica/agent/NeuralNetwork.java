@@ -10,6 +10,7 @@ public class NeuralNetwork
     private final int outputs;
     private Matrix[] bias;
 	private BackPropagation backProp;
+	private GeneticAlgorithms ga;
 
     public NeuralNetwork(int... layerSizes)
     {
@@ -43,12 +44,28 @@ public class NeuralNetwork
     public void addBackPropagationSupport(BackPropagation backProp)
     {
 		this.backProp = backProp;
-		backProp.initialize(this);
 		backProp.attachWeightMatrix(layers);
 
 		if (bias != null)
 			backProp.attachBiasMatrix(bias);
+
+		backProp.initialize(this);
     }
+
+	public void addGeneticAlgorithms(GeneticAlgorithms ga)
+	{
+		ga.attachWeightMatrix(layers);
+		if (bias != null)
+			ga.attachBiasMatrix(bias);
+
+		this.ga = ga;
+		ga.initialize(this);
+	}
+
+	public GeneticAlgorithms getGeneticAlgorithms()
+	{
+		return ga;
+	}
 
     public int getInputs()
     {
