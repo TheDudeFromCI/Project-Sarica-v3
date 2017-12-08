@@ -33,10 +33,11 @@ public class NeuralNetworkBuilder
         return this;
     }
 
-	public NeuralNetworkBuilder addGeneticAlgorithms(int population, float learningRate)
+	public NeuralNetworkBuilder addGeneticAlgorithms(int population, float learningRate, float learningLoss)
 	{
 		ga = new GeneticAlgorithms(population);
 		ga.setLearningRate(learningRate);
+		ga.setLearningLoss(learningLoss);
 		return this;
 	}
 

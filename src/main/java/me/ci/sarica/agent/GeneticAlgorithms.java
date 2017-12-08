@@ -8,6 +8,7 @@ public class GeneticAlgorithms
 {
 	private int generation;
 	private float learningRate;
+	private float learningLoss;
 	private Matrix[] layers;
 	private Matrix[] bias;
 	private int inputs;
@@ -47,21 +48,26 @@ public class GeneticAlgorithms
 		this.bias = bias;
 	}
 
-    public void resetGeneration()
-    {
-        generation = 0;
-		subGen = 0;
-    }
+	public void resetGeneration()
+	{
+  		generation = 0;
+	subGen = 0;
+	}
 
-    public float getLearningRate()
-    {
-        return learningRate;
-    }
+	public float getLearningRate()
+	{
+		return learningRate;
+	}
 
-    public void setLearningRate(float rate)
-    {
-        learningRate = rate;
-    }
+	public void setLearningRate(float rate)
+	{
+		learningRate = rate;
+	}
+
+	public void setLearningLoss(float loss)
+	{
+		learningLoss = loss;
+	}
 
 	public int getGeneration()
 	{
@@ -71,6 +77,28 @@ public class GeneticAlgorithms
 	public int getPopulation()
 	{
 		return instances.length;
+	}
+
+	public void loadBest()
+	{
+		int best = -1;
+		float score = Float.NEGATIVE_INFINITY;
+
+		for (int i = 0; i < instances.length; i++)
+		{
+			if (instances[i].getScore() >= score)
+			{
+				best = i;
+				score = instances[i].getScore();
+			}
+		}
+
+		instances[best].loadInstance(layers, bias);
+	}
+
+	public void loadCurrent()
+	{
+		instances[subGen].loadInstance(layers, bias);
 	}
 
 	public void scoreAgent(float score)
@@ -87,6 +115,8 @@ public class GeneticAlgorithms
 			int half = instances.length / 2;
 			for (int i = 0; i < half; i++)
 				instances[i] = new GAInstance(instances[i + half], learningRate);
+
+			learningRate *= learningLoss;
 		}
 
 		instances[subGen].loadInstance(layers, bias);

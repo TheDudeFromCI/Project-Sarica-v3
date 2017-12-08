@@ -22,7 +22,7 @@ public abstract class HandwrittenDigitBase
     {
         try
         {
-            String root = "C:\\Users\\TheDudeFromCI\\Documents\\Machine Learning\\MNIST Dataset";
+            String root = "D:\\MachineLearning\\MNIST";
 
             // Train
             {
