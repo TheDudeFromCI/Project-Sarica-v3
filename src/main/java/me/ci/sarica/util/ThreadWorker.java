@@ -1,5 +1,8 @@
 package me.ci.sarica.util;
 
+import java.lang.Thread;
+import me.ci.sarica.terminal.Terminal;
+
 public class ThreadWorker implements Runnable
 {
 	private ThreadOwner owner;
@@ -21,7 +24,15 @@ public class ThreadWorker implements Runnable
 
 	public void joinThread()
 	{
-		thread.join();
+		try
+		{
+			thread.join();
+		}
+		catch(Exception exception)
+		{
+			Terminal.logError("ThreadWorker", "Failed to properly join worker thread!");
+			Terminal.logError("ThreadWorker", exception);
+		}
 		thread = null;
 	}
 

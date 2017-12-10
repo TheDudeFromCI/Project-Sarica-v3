@@ -1,5 +1,8 @@
 package me.ci.sarica.util;
 
+import java.util.LinkedList;
+import java.lang.Runnable;
+
 public class ThreadOwner
 {
 	private TaskMaster taskMaster;
