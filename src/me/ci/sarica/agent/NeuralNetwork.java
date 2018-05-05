@@ -1,5 +1,7 @@
 package me.ci.sarica.agent;
 
+import me.ci.sarica.math.Matrix;
+
 public class NeuralNetwork
 {
 	private final int[] layerSizes;

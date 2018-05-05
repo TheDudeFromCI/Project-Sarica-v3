@@ -4,7 +4,7 @@ import me.ci.sarica.terminal.Terminal;
 import me.ci.sarica.agent.ClassificationDatabase;
 import me.ci.sarica.agent.NeuralNetwork;
 import me.ci.sarica.agent.NeuralNetworkBuilder;
-import me.ci.sarica.agent.Matrix;
+import me.ci.sarica.math.Matrix;
 import me.ci.sarica.terminal.history.LineGraph;
 import me.ci.sarica.agent.ClassifierExample;
 

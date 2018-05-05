@@ -1,4 +1,4 @@
-package me.ci.sarica.agent;
+package me.ci.sarica.math;
 
 public class Matrix
 {

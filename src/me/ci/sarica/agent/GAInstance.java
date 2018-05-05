@@ -1,6 +1,6 @@
 package me.ci.sarica.agent;
 
-import me.ci.sarica.agent.Matrix;
+import me.ci.sarica.math.Matrix;
 
 public class GAInstance implements Comparable<GAInstance>
 {

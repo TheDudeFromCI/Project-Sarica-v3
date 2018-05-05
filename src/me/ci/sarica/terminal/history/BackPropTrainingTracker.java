@@ -2,8 +2,8 @@ package me.ci.sarica.terminal.history;
 
 import me.ci.sarica.agent.BackPropTrainingListener;
 import me.ci.sarica.agent.ClassificationDatabase;
+import me.ci.sarica.math.Matrix;
 import me.ci.sarica.agent.BackPropagation;
-import me.ci.sarica.agent.Matrix;
 import me.ci.sarica.terminal.Terminal;
 
 public class BackPropTrainingTracker implements BackPropTrainingListener

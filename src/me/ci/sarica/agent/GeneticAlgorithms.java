@@ -2,6 +2,8 @@ package me.ci.sarica.agent;
 
 import java.util.Arrays;
 
+import me.ci.sarica.math.Matrix;
+
 public class GeneticAlgorithms
 {
 	private int generation;
